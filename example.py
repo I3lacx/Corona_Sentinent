@@ -5,6 +5,7 @@ import helper
 from analyzer import Analyzer
 from crawler import Crawler
 from plotter import Plotter
+from model import TextBlob
 
 config = {
 	"user_auth": False,
@@ -18,10 +19,11 @@ config = {
 
 	# TODO location from a list to select
 	# Create query 'call' subgroup or so
-	"location": helper.get_location(helper.GEOCODES["darmstadt"]),
+	"location": "darmstadt",	# based on helper.GEOCODES dictionary
+	"radius": 100, # optional default to 100
 	"query": ['corona'],
 	"max_searches": 100,
-	"num_results": 10,
+	"num_results": 100,
 	"rate_limit": True,
 	"return_iteratior": False,
 	"plot": {
@@ -29,13 +31,23 @@ config = {
 	}
 }
 
+config = helper.init_config(config)
+
+modl = TextBlob()
 craw = Crawler(config)
-anal = Analyzer(config)
+anal = Analyzer(config, modl)
 plot = Plotter(config)
 
-tweets = craw.get_tweets()
 users = craw.get_users()
 timeline = craw.get_timeline(users[0])
+
+tweets = craw.get_tweets()
+sentis = anal.analyze_sentiment(timeline)
+plot.simple_hist(sentis)
+
+exit()
+
+
 dicts = anal.analyze_timeline(timeline)
 plot.plot_dict(dicts["counts"])
 

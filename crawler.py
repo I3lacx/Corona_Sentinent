@@ -46,7 +46,7 @@ class Crawler:
 		Note: Does NOT do a request! Only when iterating over tweets, it will do the requests
 		"""
 		tweets = tweepy.Cursor(self.api.search, q=self.config["query"],
-							 geocode=self.config["location"]).items(self.config["max_searches"])
+							 geocode=self.config["geocode"]).items(self.config["max_searches"])
 		return tweets
 	
 	def get_tweets(self):
@@ -65,8 +65,7 @@ class Crawler:
 				if num_results == self.config["num_results"]:
 					break
 			
-		if self.config["rate_limit"]:
-			self.rate_limit()
+		self.rate_limit()
 			
 		return res_tweets
 	
@@ -79,7 +78,7 @@ class Crawler:
 		return True
 	
 	def get_recent_users(self):
-		""" Looks for recent tweets given a query and a location
+		""" Looks for recent tweets given a query and a geocode
 		returns the user objects of these users"""
 		users = []
 
@@ -92,9 +91,7 @@ class Crawler:
 			num_results += 1
 			if num_results == num_users:
 				break
-		
-		if self.config["rate_limit"]:
-			self.rate_limit()
+	
 		return users
 
 
@@ -112,6 +109,8 @@ class Crawler:
 				num_results += 1
 				if num_results == num_users:
 					break
+					
+		self.rate_limit()
 		return user_ids
 	
 	def filter_good_users(self, users):
@@ -143,9 +142,15 @@ class Crawler:
 		if len(days_until) > 0 and days_until[0] > 14:
 			return False
 		return True
-		
+	
 	def rate_limit(self):
-		""" Prints rate limit informations to the specific request """
+		""" 
+		Prints rate limit informations to the specific request (if active in configs)
+		Should be called by every function after calling the api
+		"""
+		if not self.config["rate_limit"]:
+			return
+			
 		head = self.api.last_response.headers
 		print("remaining requests:", head['x-rate-limit-remaining'])
 		
@@ -162,11 +167,17 @@ class Crawler:
 		timeline = tweepy.Cursor(self.api.user_timeline, id=user.id_str).items(self.config["get_user"]["max_timeline_searches"])
 		return timeline
 
-	def search_timeline(self, timeline_iter):
-		""" Seraches through timeline and returns tweet objects """
-		# TODO filter searches in timeline
-		pass
+	def get_timeline(self, user):
+		""" Seraches through timeline of one user and returns tweet objects """
+		# TODO filter searches by some configs in timeline
+		tweets = []
 		
+		for tweet in self.get_timeline_iterator(user):
+			tweets.append(tweet)
+		
+		self.rate_limit()
+		
+		return tweets
 		
 		
 		

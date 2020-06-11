@@ -75,19 +75,41 @@ def days_until(date):
 	return delta.days
 
 
-def get_location(place, radius=100):
+def geocode_from_location(location, radius=100):
 	""" place is input from constants defined above """
-	geocode = place + f",{radius}km"
+	if location == "":
+		return ""
+	
+	try:
+		location_geo = GEOCODES[location]
+	except KeyError:
+		raise KeyError(f"Location: {location} not found in GEOCODES dict")
+		
+	geocode = location_geo + f",{radius}km"
 	return geocode
 
 
 def config_to_txt(config):
 	""" Turns the config to readable text. Will be divided into seperate keys in a dict """
-	query = f"q={config['query']}, geocode={config['location']}"
+	# TODO add number searches based on the type of search
+	query = f"q={config['query']}, location={config['location']}(r={config['radius']})"
 	txt_dict = {
 		"query": query
 	}
 	return txt_dict
+
+
+def init_config(config):
+	""" Adds additional information to config dictionary """
+	# TODO check dictionary for problems here
+	try:
+		config["radius"]
+	except KeyError:
+		config["radius"] = 100
+	
+	config["geocode"] = geocode_from_location(config["location"], config["radius"])
+	
+	return config
 
 
 def is_retweet(tweet):

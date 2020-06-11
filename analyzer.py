@@ -9,13 +9,13 @@ class Analyzer:
 	""" Analyzer class. Takes tweets/users and will return analyzations
 	If possible, should NOT use the api by calling it
 	"""
-	def __init__(self, config):
+	def __init__(self, config, model=None):
 		self.config = config
-		pass
-	
+		self.model = model
 	
 	def analyze_timeline(self, timeline):
-		""" timeline is an tweepy iterator """
+		""" timeline is an array with twitter objects """
+		# TODO should be no different if timeline or just an array of tweets
 		# TODO should the crawler do the looping before so that analyze only gets tweets?
 		
 		num_retweets = 0
@@ -53,7 +53,14 @@ class Analyzer:
 		}
 		
 		return out
-
+	
+	def analyze_sentiment(self, tweets):
+		# TODO add usefull preprocessing and stuff
+		sentiments = []
+		for tweet in tweets:
+			sentiments.append(self.model.get_polarity(tweet.text))
+		return sentiments
+	
 
 def update_hash_dict(hash_dict, hashtags):
 	for tag in hashtags:

@@ -8,11 +8,19 @@ import tweepy
 import time
 from datetime import date
 
+# TODO (possible extensions)
+# plots say location name instead of geocode
+# 	by: in configs say location name and will be interly converted to geocode
+# 	or: transform geocode to name by checking with constants
+
+
 # Constants
-GEO_DARMSTADT = "49.8728,8.6511"
-GEO_FRANKFURT = "50.110924,8.682127"
-GEO_NEWYORK = "40.712776,-74.005974"
-GEO_HANNOVER = "52.3756631,9.7338833"
+GEOCODES = {
+	"darmstadt": "49.8728,8.6511",
+	"frakfurt": "50.110924,8.682127",
+	"new_york": "40.712776,-74.005974",
+	"hannover": "52.3756631,9.7338833"
+}
 
 
 def load_keys(path):
@@ -65,7 +73,45 @@ def days_until(date):
 	today = date.today()
 	delta = today - date
 	return delta.days
-	
+
+
+def get_location(place, radius=100):
+	""" place is input from constants defined above """
+	geocode = place + f",{radius}km"
+	return geocode
+
+
+def config_to_txt(config):
+	""" Turns the config to readable text. Will be divided into seperate keys in a dict """
+	query = f"q={config['query']}, geocode={config['location']}"
+	txt_dict = {
+		"query": query
+	}
+	return txt_dict
+
+
+def is_retweet(tweet):
+	"""Takes tweet and returns true if tweet is retweet"""
+	try:
+		# Maybe there is a way without throwing an error
+		tweet.retweeted_status
+		return True
+	except:
+		# Add actual exception here not for all
+		return False
+
+
+def is_reply(tweet):
+	"""Takes tweet and returns true if tweet is reply"""
+	try:
+		# Maybe there is a way without throwing an error
+		if tweet.in_reply_to_status_id:
+			return True
+	except:
+		# Add actual exception here not for all
+		return False
+		
+
 if __name__ == "__main__":
 	# For testing
 	get_api(False)

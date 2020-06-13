@@ -1,8 +1,8 @@
-"""Compute Sentiment with SentiWS and vaderSentiment."""
+"""TestBlob test class for finding the omptimal label boundaries."""
 import json
 from textblob_de import TextBlobDE
-from train_test_dev_split_european_corpus import read_data
-from vader_translated.sentiment_vader import optimize_label_boundaries
+from sentiment_models.train_test_dev_split_european_corpus import read_data
+from sentiment_models.vader_translated.sentiment_vader import optimize_label_boundaries
 
 INPUT_PATH = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_dev_preprocessed.csv"
 VALUE_PATH = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_dev_preprocessed_textblob_values.json"
@@ -75,10 +75,10 @@ def test_sentiws_vader_for_tweets(file):
 
 
 def main():
-    # calculate_sentiws_vader_for_tweets(VALUE_PATH)
+    calculate_sentiws_vader_for_tweets(VALUE_PATH)
     accuracy = test_sentiws_vader_for_tweets(VALUE_PATH)
     print("accuracy was {} ".format(accuracy))
-    # optimize_label_boundaries(VALUE_PATH, "textblob_value")
+    optimize_label_boundaries(VALUE_PATH, "textblob_value")
 
 
 if __name__ == "__main__":

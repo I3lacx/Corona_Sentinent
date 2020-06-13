@@ -23,19 +23,19 @@ class Model:
         self.above_positive = above_positive
         self.name = model_name
 
-    def get_polarity(self, text):
+    def get_polarity_without_preprocessing(self, text):
         """Return the polarity of the tweet as float in the range [-1, 1]."""
         raise NotImplemented
     
-    def get_polarity_and_preprocess(self, text):
-        return self.get_polarity(preprocess_text(text))
+    def get_polarity(self, text):
+        return self.get_polarity_without_preprocessing(preprocess_text(text))
     
-    def get_sentiment_label_and_preprocess(self, text):
-        return self.get_sentiment_label(preprocess_text(text))
-
     def get_sentiment_label(self, text):
+        return self.get_sentiment_label_without_preprocessing(preprocess_text(text))
+
+    def get_sentiment_label_without_preprocessing(self, text):
         """Return the label of the tweet ("pos", "neg", or "neutral")."""
-        value = self.get_polarity(text)
+        value = self.get_polarity_without_preprocessing(text)
         if value < self.below_negative:
             label = "neg"
         elif value > self.above_positive:
@@ -51,7 +51,7 @@ class TextBlob(Model):
     def __init__(self):
         super().__init__(-0.7, 0.7, "TextBlob")
 
-    def get_polarity(self, text):
+    def get_polarity_without_preprocessing(self, text):
         return TextBlobDE(text).sentiment.polarity
 
 
@@ -64,7 +64,7 @@ class SpacySentiWS(Model):
         sentiws = spaCySentiWS(sentiws_path=os.path.join("sentiment_models", "DATA", "SentiWS"))
         self.nlp.add_pipe(sentiws)
 
-    def get_polarity(self, text):
+    def get_polarity_without_preprocessing(self, text):
         values = [token._.sentiws for token in self.nlp(text) if token._.sentiws is not None]
         if len(values) == 0:
             value = 0
@@ -81,7 +81,7 @@ class VaderSentiWS(Model):
         super().__init__(-0.1, 0.1, "VaderSentiWS")
         self.analyzer = SentimentIntensityAnalyzerSentiWS()
 
-    def get_polarity(self, text):
+    def get_polarity_without_preprocessing(self, text):
         return self.analyzer.polarity_scores(text)["compound"]
 
 
@@ -92,7 +92,7 @@ class Vader(Model):
         super().__init__(-0.33, 0.46, "Vader")
         self.analyzer = SentimentIntensityAnalyzer()
 
-    def get_polarity(self, text):
+    def get_polarity_without_preprocessing(self, text):
         return self.analyzer.polarity_scores(text)["compound"]
 
 
@@ -107,10 +107,10 @@ if __name__ == "__main__":
 
     text_hard = "Oh nein, schon wieder zu viel Geld auf meinem Konto"
 
-    print("label = {} ".format(model.get_sentiment_label(text_pos)))
+    print("label = {} ".format(model.get_sentiment_label_without_preprocessing(text_pos)))
     spacy_model = SpacySentiWS()
-    print("label = {} ".format(spacy_model.get_sentiment_label(text_neg)))
-    print("label = {} ".format(spacy_model.get_polarity(text_neg)))
+    print("label = {} ".format(spacy_model.get_sentiment_label_without_preprocessing(text_neg)))
+    print("label = {} ".format(spacy_model.get_polarity_without_preprocessing(text_neg)))
 
     print(TextBlobDE(text_pos))
     print(type(TextBlobDE(text_pos)))

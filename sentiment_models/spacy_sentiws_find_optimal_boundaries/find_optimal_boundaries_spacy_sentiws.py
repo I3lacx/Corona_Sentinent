@@ -1,10 +1,11 @@
+"""Spacy SentiWS test class for finding the omptimal label boundaries."""
 import json
 
 import spacy
 from numpy import mean
 from spacy_sentiws import spaCySentiWS
-from train_test_dev_split_european_corpus import read_data
-from vader_translated.sentiment_vader import read_data_with_values, optimize_label_boundaries
+from sentiment_models.train_test_dev_split_european_corpus import read_data
+from sentiment_models.vader_translated.sentiment_vader import read_data_with_values, optimize_label_boundaries
 
 nlp = spacy.load('de_core_news_sm')
 sentiws = spaCySentiWS(sentiws_path='DATA/SentiWS')

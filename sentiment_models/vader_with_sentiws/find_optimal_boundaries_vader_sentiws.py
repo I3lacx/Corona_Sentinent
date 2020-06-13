@@ -1,11 +1,11 @@
-"""Compute Sentiment with SentiWS and vaderSentiment."""
+"""Optimize label boundaries for Sentiment calculat#rion with SentiWS and vaderSentiment."""
 import json
 
-from sentiws.lib_sentiment_sentiws import SentimentIntensityAnalyzer
-from train_test_dev_split_european_corpus import read_data
-from vader_translated.sentiment_vader import optimize_label_boundaries
+from sentiment_models.vader_with_sentiws.lib_sentiment_sentiws import SentimentIntensityAnalyzerSentiWS
+from sentiment_models.train_test_dev_split_european_corpus import read_data
+from sentiment_models.vader_translated.sentiment_vader import optimize_label_boundaries
 
-ANALYZER = SentimentIntensityAnalyzer()
+ANALYZER = SentimentIntensityAnalyzerSentiWS()
 INPUT_PATH = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_dev_preprocessed.csv"
 VALUE_PATH = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_dev_preprocessed_sentiws_values.json"
 BELOW_NEGATIVE = -0.1
@@ -78,10 +78,10 @@ def test_sentiws_vader_for_tweets(file):
 
 
 def main():
-    # calculate_sentiws_vader_for_tweets(VALUE_PATH)
+    calculate_sentiws_vader_for_tweets(VALUE_PATH)
     accuracy = test_sentiws_vader_for_tweets(VALUE_PATH)
     print("accuracy was {} ".format(accuracy))
-    # optimize_label_boundaries(VALUE_PATH, "sentiws_value")
+    optimize_label_boundaries(VALUE_PATH, "sentiws_value")
 
 
 if __name__ == "__main__":

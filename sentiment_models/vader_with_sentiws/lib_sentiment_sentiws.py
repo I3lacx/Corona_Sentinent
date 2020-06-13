@@ -180,7 +180,7 @@ class SentiText(object):
         return wes
 
 
-class SentimentIntensityAnalyzer(object):
+class SentimentIntensityAnalyzerSentiWS(object):
     """Give a sentiment intensity score to sentences.
 
     Arguments:

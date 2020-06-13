@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-Calculate the sentiment for the given arguments based on vaderSentiment.
-
-    Return Value:
-        score von -1-1, -1 neg, 1 pos, 0 neutral.
-"""
+"""Optimize label boundaries for Sentiment calculation with translated vaderSentiment."""
 import json
 
-from train_test_dev_split_european_corpus import read_data
-from vader_translated.vaderSentimentmaster.vaderSentiment.vaderSentiment.vaderSentiment \
+from sentiment_models.train_test_dev_split_european_corpus import read_data
+from sentiment_models.vader_translated.vaderSentimentmaster.vaderSentiment.vaderSentiment.vaderSentiment \
     import SentimentIntensityAnalyzer
 import matplotlib.pyplot as plt
 

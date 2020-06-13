@@ -7,6 +7,11 @@ from spacy_sentiws import spaCySentiWS
 from sentiment_models.vader_translated.vaderSentimentmaster.vaderSentiment.vaderSentiment.vaderSentiment \
     import SentimentIntensityAnalyzer
 from sentiment_models.vader_with_sentiws.lib_sentiment_sentiws import SentimentIntensityAnalyzerSentiWS
+from sentiment_models.preprocess_tweets import replace_all
+
+
+def preprocess_text(text):
+    return replace_all(text)
 
 
 class Model:
@@ -21,6 +26,12 @@ class Model:
     def get_polarity(self, text):
         """Return the polarity of the tweet as float in the range [-1, 1]."""
         raise NotImplemented
+    
+    def get_polarity_and_preprocess(self, text):
+        return self.get_polarity(preprocess_text(text))
+    
+    def get_sentiment_label_and_preprocess(self, text):
+        return self.get_sentiment_label(preprocess_text(text))
 
     def get_sentiment_label(self, text):
         """Return the label of the tweet ("pos", "neg", or "neutral")."""

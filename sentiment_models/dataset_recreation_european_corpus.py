@@ -3,7 +3,7 @@ import math
 
 from tweepy import TweepError
 
-from get_tweets_for_corona_dataset import get_api_and_auth
+from sentiment_models.get_tweets_for_corona_dataset import get_api_and_auth
 
 DATA_INPUT = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment.csv"
 DATA_OUTPUT = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_filtered_with_text.csv"

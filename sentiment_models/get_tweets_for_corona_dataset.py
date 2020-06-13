@@ -2,8 +2,8 @@ import csv
 
 import tweepy
 from tweepy import TweepError
-from keys import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET
-
+# from keys import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET
+CONSUMER_KEY = CONSUMER_SECRET = ACCESS_KEY = ACCESS_SECRET = ""
 
 def get_api_and_auth():
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)

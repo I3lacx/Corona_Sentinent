@@ -7,6 +7,7 @@ are useful as an extern function
 import tweepy
 import time
 from datetime import date
+import json
 
 # TODO (possible extensions)
 # plots say location name instead of geocode
@@ -41,7 +42,7 @@ def load_keys(path):
 	return key, secret
 
 
-def get_api(user_auth = False, app_path="app_auth", user_path="user_auth",):
+def get_api(user_auth = False, app_path="app_auth", user_path="user_auth"):
 	""" 
 	Loads Application and user (if user_auth) keys from paths
 	:app_apth: path for Application keys
@@ -92,22 +93,33 @@ def geocode_from_location(location, radius=100):
 def config_to_txt(config):
 	""" Turns the config to readable text. Will be divided into seperate keys in a dict """
 	# TODO add number searches based on the type of search
-	query = f"q={config['query']}, location={config['location']}(r={config['radius']})"
+	query = f"q={config['search']['query']}, \
+	 location={config['search']['location']} \
+	 (r={config['search']['radius']})"
 	txt_dict = {
 		"query": query
 	}
 	return txt_dict
 
 
+def set_default(dicti, key, value):
+	""" Checks if key is already defined, if not will set to value"""
+	try:
+		dicti[key]
+	except KeyError:
+		dicti[key] = value
+	
+
 def init_config(config):
 	""" Adds additional information to config dictionary """
-	# TODO check dictionary for problems here
-	try:
-		config["radius"]
-	except KeyError:
-		config["radius"] = 100
+	# TODO check dictionary for problems here (mandatorys not set)
 	
-	config["geocode"] = geocode_from_location(config["location"], config["radius"])
+	# Set defaults if not defined
+	set_default(config["search"], "radius", 100)
+	set_default(config["search"], "max_searches", 1000)
+	set_default(config["search"], "rate_limit", True)
+	
+	config["search"]["geocode"] = geocode_from_location(config["search"]["location"], config["search"]["radius"])
 	
 	return config
 
@@ -125,15 +137,42 @@ def is_retweet(tweet):
 
 def is_reply(tweet):
 	"""Takes tweet and returns true if tweet is reply"""
-	try:
-		# Maybe there is a way without throwing an error
-		if tweet.in_reply_to_status_id:
-			return True
-	except:
-		# Add actual exception here not for all
+	if tweet.in_reply_to_status_id:
+		return True
+	else:
 		return False
-		
+
 
 if __name__ == "__main__":
 	# For testing
 	get_api(False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

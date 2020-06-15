@@ -5,7 +5,7 @@ import helper
 from analyzer import Analyzer
 from crawler import Crawler
 from plotter import Plotter
-from model import TextBlob
+import model
 
 config = {
 	"user_auth": False,

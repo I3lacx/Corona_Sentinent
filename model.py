@@ -130,7 +130,7 @@ class TrainedSentimentModel(Model):
     def get_sentiment_labels_batch(self, texts):
         """Return the labels of a list of tweets ("pos", "neg", or "neut") after preprocessing them."""
         preprocessed_texts = [preprocess_text(text) for text in texts]
-        return self.get_sentiment_label_without_preprocessing(preprocessed_texts)
+        return self.get_sentiment_labels_without_preprocessing_batch(preprocessed_texts)
 
     def get_sentiment_label_without_preprocessing(self, text):
         """Return the label of the tweet ("pos", "neg", or "neut")."""
@@ -147,7 +147,10 @@ class TrainedSentimentModel(Model):
         encoded_text = self.tokenizer.texts_to_sequences(prediction_input)
         passed_encoded_text = pad_sequences(encoded_text, maxlen=200)
         prob_dist = self.analyzer.predict(passed_encoded_text)
-        predicted = np.argmax(prob_dist)
+        if len(prediction_input) == 1:
+            predicted = np.argmax(prob_dist)
+        else:
+            predicted = np.argmax(prob_dist, axis=1)
         return predicted
 
     def _load_tokenizer(self):
@@ -173,6 +176,8 @@ if __name__ == "__main__":
     print("label = {} ".format(spacy_model.get_sentiment_label(text_neg)))
     print("label = {} ".format(spacy_model.get_polarity(text_neg)))
 
+    trained_model = TrainedSentimentModel()
+    print(trained_model.get_sentiment_labels_batch([text_pos, text_neg, text_neu]))
 
     print(TextBlobDE(text_pos))
     print(type(TextBlobDE(text_pos)))

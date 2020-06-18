@@ -13,6 +13,11 @@ class TestModels(unittest.TestCase):
     def test_output(self):
         for model in self.model_list:
             current_model = model()
+            if current_model.name == "TrainedModel":
+                tweet_texts = [tweet_text for label, tweet_text in self.tweets]
+                tweet_labels = [label for label, tweet_text in self.tweets]
+                guessed_labels = current_model.get_sentiment_labels_batch(tweet_texts)
+                self.assertEqual(tweet_labels, guessed_labels)
             for real_label, text in self.tweets:
                 try:
                     guessed_label = current_model.get_sentiment_label(text)

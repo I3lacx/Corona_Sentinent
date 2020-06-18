@@ -6,7 +6,6 @@ import string
 from itertools import product
 from inspect import getsourcefile
 from io import open
-import spacy
 # ##Constants##
 
 # (empirically derived mean sentiment intensity rating increase for booster
@@ -18,7 +17,7 @@ B_DECR = -0.293
 #  ALLCAPs to emphasize a word) (by sentiment_vader for english words)
 C_INCR = 0.733
 N_SCALAR = -0.74
-nlp = spacy.load("de_core_news_sm", disable=["ner", "textcat"])
+
 
 # for removing punctuation
 REGEX_REMOVE_PUNCTUATION = re.compile('[%s]' % re.escape(string.punctuation))

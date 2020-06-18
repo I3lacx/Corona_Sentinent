@@ -1,8 +1,15 @@
 import os
+import pickle
 
 from textblob_de import TextBlobDE
 import spacy
-from numpy import mean
+import numpy as np
+from statistics import mean
+from tensorflow.keras.models import load_model, Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.layers import SpatialDropout1D
+from tensorflow.keras.layers import Embedding
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from spacy_sentiws import spaCySentiWS
 from sentiment_models.vader_translated.vaderSentimentmaster.vaderSentiment.vaderSentiment.vaderSentiment \
@@ -35,7 +42,7 @@ class Model:
         return self.get_sentiment_label_without_preprocessing(preprocess_text(text))
 
     def get_sentiment_label_without_preprocessing(self, text):
-        """Return the label of the tweet ("pos", "neg", or "neutral")."""
+        """Return the label of the tweet ("pos", "neg", or "neut")."""
         value = self.get_polarity_without_preprocessing(text)
         if value < self.below_negative:
             label = "neg"
@@ -97,6 +104,59 @@ class Vader(Model):
         return self.analyzer.polarity_scores(text)["compound"]
 
 
+class TrainedSentimentModel(Model):
+    """Use the sentiment model we trained"""
+    def __init__(self):
+        super().__init__(0, 0, "TrainedModel")
+        self._load_model()
+        self._load_tokenizer()
+        self.label_translation = {0: "neg", 1: "neut", 2: "pos"}
+
+    def _load_model(self):
+        """Load the model from file"""
+        self.analyzer = load_model("./sentiment_models/trained_model")
+
+    def get_polarity_without_preprocessing(self, text):
+        """Return the polarity of the tweet as float in the range [-1, 1]."""
+        return None
+
+    def get_polarity(self, text):
+        return None
+
+    def get_sentiment_label(self, text):
+        """Return the label of the tweet after preprocessing it ("pos", "neg", or "neut")."""
+        return self.get_sentiment_label_without_preprocessing(preprocess_text(text))
+    
+    def get_sentiment_labels_batch(self, texts):
+        """Return the labels of a list of tweets ("pos", "neg", or "neut") after preprocessing them."""
+        preprocessed_texts = [preprocess_text(text) for text in texts]
+        return self.get_sentiment_label_without_preprocessing(preprocessed_texts)
+
+    def get_sentiment_label_without_preprocessing(self, text):
+        """Return the label of the tweet ("pos", "neg", or "neut")."""
+        predicted = self._do_prediction([text])
+        return self.label_translation[predicted.item()]
+    
+    def get_sentiment_labels_without_preprocessing_batch(self, texts):
+        """Return the labels of a list of tweets ("pos", "neg", or "neut")."""
+        predicted = self._do_prediction(texts)
+        return [self.label_translation[pred.item()] for pred in predicted]
+    
+    def _do_prediction(self, prediction_input):
+        """Encode the input and predict the label(s)"""
+        encoded_text = self.tokenizer.texts_to_sequences(prediction_input)
+        passed_encoded_text = pad_sequences(encoded_text, maxlen=200)
+        prob_dist = self.analyzer.predict(passed_encoded_text)
+        predicted = np.argmax(prob_dist)
+        return predicted
+
+    def _load_tokenizer(self):
+        """Load the tokenizer from file"""
+        with open('sentiment_models/tokenizer.pickle', 'rb') as handle:
+            tokenizer = pickle.load(handle)
+        self.tokenizer = tokenizer
+
+
 if __name__ == "__main__":
     # For testing the model
 
@@ -108,10 +168,11 @@ if __name__ == "__main__":
 
     text_hard = "Oh nein, schon wieder zu viel Geld auf meinem Konto"
 
-    print("label = {} ".format(model.get_sentiment_label_without_preprocessing(text_pos)))
+    print("label = {} ".format(model.get_sentiment_label(text_pos)))
     spacy_model = SpacySentiWS()
-    print("label = {} ".format(spacy_model.get_sentiment_label_without_preprocessing(text_neg)))
-    print("label = {} ".format(spacy_model.get_polarity_without_preprocessing(text_neg)))
+    print("label = {} ".format(spacy_model.get_sentiment_label(text_neg)))
+    print("label = {} ".format(spacy_model.get_polarity(text_neg)))
+
 
     print(TextBlobDE(text_pos))
     print(type(TextBlobDE(text_pos)))

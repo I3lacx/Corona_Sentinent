@@ -4,3 +4,5 @@ app_auth
 user_auth
 .idea
 sentiment_models/keys.py
+
+sentiment_models/trained_model/

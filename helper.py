@@ -63,7 +63,7 @@ def get_api(user_auth = False, app_path="app_auth", user_path="user_auth"):
 		# 0Auth 1 Application User Authentication
 		auth.set_access_token(user_token, user_token_secret)
 
-	api = tweepy.API(auth)
+	api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 	return api
 
 

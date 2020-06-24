@@ -109,13 +109,18 @@ class Crawler:
 
 		num_users = self.config["get_user"]["num_users"]
 		num_results = 0
+
+		user_ids = []
 		
 		tweets_iter = self._get_tweet_iterator()
 		for tweet in tweets_iter:
-			users.append(tweet.user)
-			num_results += 1
-			if num_results == num_users:
-				break
+			current_user = tweet.user
+			if not current_user.id in user_ids:
+				users.append(current_user)
+				user_ids.append(current_user.id)
+				num_results += 1
+				if num_results == num_users:
+					break
 	
 		self.rate_limit()
 		return users
@@ -206,6 +211,11 @@ class Crawler:
 		res_tweets = self._get_from_iterator(iterator)
 		
 		return res_tweets
+
+	def get_timeline_tweets_from_user_list(self, users):
+		"""Returns a nestedlist, where each element of the outer list contains a list with all tweets of the user"""
+		all_tweets = [self.get_timeline(user) for user in users]
+		return all_tweets
 		
 		
 	def save_tweets(self, tweets, file_name):

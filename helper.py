@@ -6,7 +6,7 @@ are useful as an extern function
 
 import tweepy
 import time
-from datetime import date
+import datetime
 import json
 
 # TODO (possible extensions)
@@ -63,7 +63,7 @@ def get_api(user_auth = False, app_path="app_auth", user_path="user_auth"):
 		# 0Auth 1 Application User Authentication
 		auth.set_access_token(user_token, user_token_secret)
 
-	api = tweepy.API(auth)
+	api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 	return api
 
 
@@ -71,10 +71,16 @@ def days_until(date):
 	""" Converts date of form: ..... into number of days from 01.01.2020 until this date (int)"""
 	# TODO maybe set fixed date?
 	# or atleast save today time in graph
-	today = date.today()
+	today = datetime.datetime.now()
 	delta = today - date
 	return delta.days
 
+
+def hours_until(date):
+	now = datetime.datetime.now()
+	delta = now - date
+	hours = delta.seconds//3600 + delta.days * 24
+	return hours
 
 def geocode_from_location(location, radius=100):
 	""" place is input from constants defined above """

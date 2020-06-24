@@ -35,8 +35,6 @@ class Crawler:
 		else:
 			raise ValueError(f"Value: {self.config['get_user']['search_type']} not recognized")
 		
-		if self.config["get_user"]["good_user"]:
-			users = self.filter_good_users(users)
 		return users
 	
 	def get_user_from_id(self, user_id):
@@ -80,7 +78,9 @@ class Crawler:
 	def _get_from_iterator(self, iterator):
 		""" should be used interally only
 		given an iteratior will search through tweets with filtering and stuff	
+		return code 1 for number of results reached, -1 for search reached end point e.g. (time)
 		"""
+		return_code = 0
 		
 		res_tweets = []
 		num_results = 0
@@ -92,13 +92,15 @@ class Crawler:
 				res_tweets.append(tweet)
 				if num_results == self.config["search"]["num_results"]:
 					print("Number of results reached")
+					return_code = 1
 					break
 			elif self.check_tweet(tweet) == -1:
 				print("Search reached end point")
+				return_code = -1
 				break
 			
 		self.rate_limit(checked_tweets)
-		return res_tweets
+		return res_tweets, return_code
 	
 	def check_tweet(self, tweet):
 		"""
@@ -129,13 +131,19 @@ class Crawler:
 
 		num_users = self.config["get_user"]["num_users"]
 		num_results = 0
+
+		user_ids = []
 		
 		tweets_iter = self._get_tweet_iterator()
 		for tweet in tweets_iter:
-			users.append(tweet.user)
-			num_results += 1
-			if num_results == num_users:
-				break
+			current_user = tweet.user
+			if not current_user.id in user_ids:
+				if self.is_good_user(current_user.id):
+					users.append(current_user)
+					user_ids.append(current_user.id)
+					num_results += 1
+					if num_results == num_users:
+						break
 	
 		self.rate_limit()
 		return users
@@ -180,15 +188,20 @@ class Crawler:
 		"""
 		days_until = []
 		for status in tweepy.Cursor(self.api.user_timeline, id=user_id).items(num_searches):
+			last_action = status
 			if not helper.is_retweet(status) and not helper.is_reply(status):
 				days_until.append(helper.days_until(status.created_at))
-				
-		if len(days_until) == 0:
+		
+		# His last 100 actions were within the last 3 days (too much activity)
+		if helper.hours_until(last_action.created_at) < (24*3) :
+			print("Cond 1:", helper.hours_until(last_action.created_at))
 			return False
-		if len(days_until) > 5 and np.amax(days_until[0:5]) < 1:
+
+		# Not enough recent activity in own tweeting
+		if len(days_until) > 0 and days_until[0] > 7:
+			print("Cond 2")
 			return False
-		if len(days_until) > 0 and days_until[0] > 14:
-			return False
+			
 		return True
 	
 	def rate_limit(self, num_checked_tweets=None):
@@ -221,18 +234,39 @@ class Crawler:
 	def get_timeline(self, user):
 		""" Seraches through timeline of one user and returns tweet objects (applies search options) """
 		iterator = self._get_timeline_iterator(user)
-		res_tweets = self._get_from_iterator(iterator)
+		res_tweets, return_code = self._get_from_iterator(iterator)
 		
 		return res_tweets
+
+	def get_full_timeline_until(self, user):
+		""" Searches through a full timeline and returns no tweets if it was not able to search the whole timeline """
+		iterator = self._get_timeline_iterator(user)
+		res_tweets, return_code = self._get_from_iterator(iterator)
+		if return_code == -1:
+			# analyzed all tweets until specified time
+			return res_tweets
+		else:
+			return []
+		
+	
+	def get_timeline_tweets_from_user_list(self, users):
+		"""Returns a nestedlist, where each element of the outer list contains a list with all tweets of the user"""
+		all_tweets = [self.get_timeline(user) for user in users]
+		return all_tweets
 		
 		
-	def save_tweets(self, tweets, file_name):
+	def save_tweets(self, tweets, file_name, configs=True):
 		""" Takes list of tweet objects and saves to file"""
 		with open(file_name, "w") as f:
 			for tweet in tweets:
 				json.dump(tweet._json, f)
 				f.write('\n')
-
+		# saves extra file without .json with infos about it:
+		with open(file_name[:-5], "w") as f:
+			f.write(datetime.datetime.now())
+			f.write('\n')
+			f.write(str(self.config))
+		
 
 	def load_tweet(self, file_name, is_dict=False):
 		""" Loads tweet from json file and uses api to convert back to object 

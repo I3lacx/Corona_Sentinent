@@ -142,6 +142,14 @@ def is_reply(tweet):
 	else:
 		return False
 
+def save_user(user, file_name=None):
+	""" Takes user object and saves it to file, with user_name as file_name"""
+	if file_name is None:
+		file_name = "saved_data/users/" + str(user.name)
+		
+	with open(file_name, "w") as f:
+		json.dump(user._json, f)
+
 
 if __name__ == "__main__":
 	# For testing

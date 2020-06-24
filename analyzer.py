@@ -54,12 +54,14 @@ class Analyzer:
 		
 		return out
 	
-	def analyze_sentiment(self, tweets):
-		# TODO add usefull preprocessing and stuff
-		sentiments = []
-		for tweet in tweets:
-			sentiments.append(self.model.get_polarity(tweet.text))
-		return sentiments
+	def analyze_sentiment(self, tweets, model=None):
+		if model is None:
+			model = self.model
+		
+		texts = [tweet.text for tweet in tweets]
+		sentis = model.get_sentiment_labels_batch(texts)
+		
+		return sentis
 	
 
 def update_hash_dict(hash_dict, hashtags):

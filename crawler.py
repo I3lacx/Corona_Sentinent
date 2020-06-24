@@ -8,6 +8,7 @@ import tweepy
 import time
 from datetime import datetime
 import json
+import numpy as np
 
 
 class Crawler:
@@ -37,7 +38,12 @@ class Crawler:
 		if self.config["get_user"]["good_user"]:
 			users = self.filter_good_users(users)
 		return users
-		
+	
+	def get_user_from_id(self, user_id):
+		""" id specifies the id or screen name of the user """
+		user = self.api.get_user(user_id)
+		return user
+	
 	def get_tweets(self):
 		"""
 		Callable from outside get tweets function
@@ -47,7 +53,19 @@ class Crawler:
 		res_tweets = self._get_from_iterator(iterator)
 			
 		return res_tweets
-		
+	
+	def _get_full_search_iterator(self):
+		""" get full search iterator 
+		NOT TESTED!
+		"""
+		opts = self.config["full_search"]
+		iterator = tweepy.Cursor(craw.api.search_full_archive,
+					query=opts["query"], 
+					fromDate=opts["fromDate"], 
+					toDate=opts["toDate"],
+					environment_name=opts["env_name"])
+		return iterator
+	
 	def _get_tweet_iterator(self):
 		"""
 		Main connection to tweepy
@@ -73,8 +91,10 @@ class Crawler:
 				num_results += 1
 				res_tweets.append(tweet)
 				if num_results == self.config["search"]["num_results"]:
+					print("Number of results reached")
 					break
 			elif self.check_tweet(tweet) == -1:
+				print("Search reached end point")
 				break
 			
 		self.rate_limit(checked_tweets)
@@ -175,8 +195,6 @@ class Crawler:
 		""" 
 		Prints rate limit informations to the specific request (if active in configs)
 		Should be called by every function after calling the api
-		002af71800e2cd44 (get users)
-		007a273b000645b4 (timeline)
 		"""
 		if not self.config["search"]["rate_limit"]:
 			return
@@ -233,7 +251,6 @@ class Crawler:
 				tweets.append(tweet)
 				
 		return tweets
-		
 		
 		
 		

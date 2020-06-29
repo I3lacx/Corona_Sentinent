@@ -9,6 +9,7 @@ import time
 from datetime import datetime
 import json
 import numpy as np
+import os
 
 
 class Crawler:
@@ -18,6 +19,9 @@ class Crawler:
 		""" Set configs to self values """
 		self.config = config
 		self.api = self.get_api()
+		
+		# Set this parameter during full scan
+		self.unique_user_ids = set(())
 		
 	def check_config():
 		""" Check some elements in the config """
@@ -64,15 +68,19 @@ class Crawler:
 					environment_name=opts["env_name"])
 		return iterator
 	
-	def _get_tweet_iterator(self):
+	def _get_tweet_iterator(self, geocode=None):
 		"""
 		Main connection to tweepy
 		Returns tweets ITERATOR from tweepy Cursor search with specified settings
 		from self.config
 		Note: Does NOT do a request! Only when iterating over tweets, it will do the requests
 		"""
+		
+		if geocode is None:
+			geocode=self.config["search"]["geocode"]
+		
 		tweets = tweepy.Cursor(self.api.search, q=self.config["search"]["query"],
-							 geocode=self.config["search"]["geocode"]).items(self.config["search"]["max_searches"])
+							 geocode=geocode).items(self.config["search"]["max_searches"])
 		return tweets
 	
 	def _get_from_iterator(self, iterator):
@@ -124,27 +132,32 @@ class Crawler:
 		
 		return 1
 	
-	def get_recent_users(self):
+	def get_recent_users(self, geocode=None):
 		""" Looks for recent tweets given a query and a geocode
-		returns the user objects of these users"""
+		returns the user objects of these users
+		user_ids is optional input array if you don't want to add these user ids.
+		"""
 		users = []
-
+		
+		user_ids = self.unique_user_ids		
+		
 		num_users = self.config["get_user"]["num_users"]
 		num_results = 0
-
-		user_ids = []
 		
-		tweets_iter = self._get_tweet_iterator()
+		tweets_iter = self._get_tweet_iterator(geocode)
 		for tweet in tweets_iter:
 			current_user = tweet.user
 			if not current_user.id in user_ids:
 				if self.is_good_user(current_user.id):
 					users.append(current_user)
-					user_ids.append(current_user.id)
+					user_ids.add(current_user.id)
 					num_results += 1
 					if num_results == num_users:
 						break
 	
+		if self.config["get_user"]["unique_ids"]:
+			self.unique_user_ids.update(user_ids)
+			
 		self.rate_limit()
 		return users
 
@@ -194,12 +207,12 @@ class Crawler:
 		
 		# His last 100 actions were within the last 3 days (too much activity)
 		if helper.hours_until(last_action.created_at) < (24*3) :
-			print("Cond 1:", helper.hours_until(last_action.created_at))
+			# print("Cond 1:", helper.hours_until(last_action.created_at))
 			return False
 
 		# Not enough recent activity in own tweeting
 		if len(days_until) > 0 and days_until[0] > 7:
-			print("Cond 2")
+			# print("Cond 2")
 			return False
 			
 		return True
@@ -257,15 +270,25 @@ class Crawler:
 		
 	def save_tweets(self, tweets, file_name, configs=True):
 		""" Takes list of tweet objects and saves to file"""
+		# TODO check if path exists and create new if needed
+		
+		# Checks path and returns if file is already existing:
+		
+		if os.path.isfile(file_name):
+			print("File already existing, exiting...")
+			return 
+			
 		with open(file_name, "w") as f:
 			for tweet in tweets:
 				json.dump(tweet._json, f)
 				f.write('\n')
-		# saves extra file without .json with infos about it:
-		with open(file_name[:-5], "w") as f:
-			f.write(datetime.datetime.now())
-			f.write('\n')
-			f.write(str(self.config))
+		
+		if configs:
+			# saves extra file without .json with infos about it:
+			with open(file_name[:-5], "w") as f:
+				f.write(datetime.datetime.now())
+				f.write('\n')
+				f.write(str(self.config))
 		
 
 	def load_tweet(self, file_name, is_dict=False):
@@ -285,9 +308,57 @@ class Crawler:
 				tweets.append(tweet)
 				
 		return tweets
+	
+	def full_scan(self):
+		""" Do a full scan over all different locations: """
+		# Load old user_ids 
+		self.unique_user_ids = self.load_user_list()
+		
+		# Scan for users
+		print("Scanning for Users...")
+		users_list = []
+		for location in self.config["full_scan"]["locations"]:
+			geocode = helper.geocode_from_location(location)
+			users_list.append(self.get_recent_users(geocode=geocode))
+		
+		print(np.shape(users_list))
+	
+		print("Saving new User List")
+		# Append new users to saved list
+		self.save_user_list(users_list)
 		
 		
+		# Scan and save tweets of these users
+		for idx, users in enumerate(users_list):
+			print("Scanning and saving tweets:", idx)
+			for user in users:
+				path = self.config["full_scan"]["path"] + "tweets/" + str(idx) + "/" + user.id_str
+				tweets = self.get_timeline(user)
+				self.save_tweets(tweets, path, configs=False)
 		
+
+		
+	def save_user_list(self, new_users_list):
+		""" 3 dim array users, only filled with new users to avoid overwriting the whole thing """
+		path = self.config["full_scan"]["path"] + "users/"
+		for i in range(len(self.config["full_scan"]["locations"])):
+			path_sp = path + "users_" + str(i)
+			with open(path_sp, "a") as f:
+				for user in new_users_list[i]:
+					f.write(user.id_str + "\n")
+		
+		
+	def load_user_list(self):
+		""" Returns set """
+		path = self.config["full_scan"]["path"] + "users/"
+		unique_ids = set(())
+		for i in range(len(self.config["full_scan"]["locations"])):
+			path_sp = path + "users_" + str(i)
+			with open(path_sp, "r") as f:
+				user_ids = f.readlines()
+			# Set operation to fuse both sets
+			unique_ids.update(set([x.strip() for x in user_ids]))
+		return unique_ids
 		
 		
 		

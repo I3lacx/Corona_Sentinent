@@ -14,13 +14,22 @@ import json
 # 	by: in configs say location name and will be interly converted to geocode
 # 	or: transform geocode to name by checking with constants
 
-
+"""
+latitude,longitude,distance,fillcolor,linewidth,linecolor
+Area to scan:
+50.79234746151547,9.286462046949623,200.39917980930625
+52.608896331013604,10.736657359449623,222.3408738021322
+48.94326100903298,10.538903453199623,145.68010936710823
+"""
 # Constants
 GEOCODES = {
 	"darmstadt": "49.8728,8.6511",
 	"frakfurt": "50.110924,8.682127",
 	"new_york": "40.712776,-74.005974",
-	"hannover": "52.3756631,9.7338833"
+	"hannover": "52.3756631,9.7338833",
+	"scan_1": "50.792347461,9.2864620469,200km",
+	"scan_2": "52.6088963310,10.7366573594,222km",
+	"scan_3": "48.943261009,10.5389034531,145km"
 }
 
 
@@ -91,8 +100,12 @@ def geocode_from_location(location, radius=100):
 		location_geo = GEOCODES[location]
 	except KeyError:
 		raise KeyError(f"Location: {location} not found in GEOCODES dict")
-		
-	geocode = location_geo + f",{radius}km"
+	
+	if "scan" in location:
+		geocode = location_geo
+	else:
+		geocode = location_geo + f",{radius}km"
+	
 	return geocode
 
 

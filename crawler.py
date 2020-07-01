@@ -99,11 +99,11 @@ class Crawler:
 				num_results += 1
 				res_tweets.append(tweet)
 				if num_results == self.config["search"]["num_results"]:
-					print("Number of results reached")
+					# print("Number of results reached")
 					return_code = 1
 					break
 			elif self.check_tweet(tweet) == -1:
-				print("Search reached end point")
+				# print("Search reached end point")
 				return_code = -1
 				break
 			
@@ -239,6 +239,25 @@ class Crawler:
 		print("reset at:", datetime.fromtimestamp(reset))
 		print(f"reset in: {int(time_until // 60):02d}:{int(time_until % 60):02d}")
 	
+	def compare_users_and_tweets(self):
+		""" Looks at the user ids and compares them to saved tweets """
+		self.unique_user_ids = self.load_user_list()
+		
+		# get tweet filenames:
+		scanned_tweets = []
+		for i in range(3):
+			path = self.config["full_scan"]["path"] + "tweets/" + str(i) + "/"
+			tweets = os.listdir(path)
+			scanned_tweets += tweets
+		
+		print("Scanned Tweets:", len(scanned_tweets))
+		unique_list = set(scanned_tweets)
+		print("Unique Tweets:", len(unique_list))
+		print("Unique user_ids:", len(self.unique_user_ids))
+		print("XOR:", len(self.unique_user_ids ^ unique_list))
+		print("user - tweets:", len(self.unique_user_ids - unique_list))
+		print("tweets - user:", len(unique_list - self.unique_user_ids))
+	
 	def _get_timeline_iterator(self, user):
 		""" Returns timeline (tweepy iterator) of user object"""
 		timeline = tweepy.Cursor(self.api.user_timeline, id=user.id_str).items(self.config["search"]["max_searches"])
@@ -330,8 +349,9 @@ class Crawler:
 		
 		# Scan and save tweets of these users
 		for idx, users in enumerate(users_list):
-			print("Scanning and saving tweets:", idx)
-			for user in users:
+			print("\nScanning and saving tweets:", idx)
+			for u_idx, user in enumerate(users):
+				print(f"{u_idx}-", end="")
 				path = self.config["full_scan"]["path"] + "tweets/" + str(idx) + "/" + user.id_str
 				tweets = self.get_timeline(user)
 				self.save_tweets(tweets, path, configs=False)

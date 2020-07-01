@@ -134,23 +134,36 @@ class TrainedSentimentModel(Model):
 
     def get_sentiment_label_without_preprocessing(self, text):
         """Return the label of the tweet ("pos", "neg", or "neut")."""
-        predicted = self._do_prediction([text])
+        predicted = self._do_label_prediction([text])
         return self.label_translation[predicted.item()]
     
     def get_sentiment_labels_without_preprocessing_batch(self, texts):
         """Return the labels of a list of tweets ("pos", "neg", or "neut")."""
-        predicted = self._do_prediction(texts)
+        predicted = self._do_label_prediction(texts)
         return [self.label_translation[pred.item()] for pred in predicted]
+
+    def get_label_for_clear_cases(self, texts, pos_boundary=0.8, neg_boundary=0.7):
+        if not isinstance(texts, list):
+            texts = list(texts)
+        texts = [preprocess_text(text) for text in texts]
+        prob_dists = self.do_prediction(texts)
+        labels = []
+        for i in range(len(texts)):
+            row = [val.item() for val in prob_dists[i]]
+            label = "pos" if row[2] > pos_boundary else "neg" if row[0] > neg_boundary else "neut"
+            labels.append(label)
+        return labels
     
-    def _do_prediction(self, prediction_input):
+    def do_prediction(self, prediction_input):
         """Encode the input and predict the label(s)"""
         encoded_text = self.tokenizer.texts_to_sequences(prediction_input)
         passed_encoded_text = pad_sequences(encoded_text, maxlen=200)
         prob_dist = self.analyzer.predict(passed_encoded_text)
-        if len(prediction_input) == 1:
-            predicted = np.argmax(prob_dist)
-        else:
-            predicted = np.argmax(prob_dist, axis=1)
+        return prob_dist
+
+    def do_label_prediction(self, prediction_input):
+        prob_dist = self.do_prediction()
+        predicted = self._get_label_from_prob_dist(prob_dist, len(prediction_input) == 1)
         return predicted
 
     def _load_tokenizer(self):
@@ -158,6 +171,13 @@ class TrainedSentimentModel(Model):
         with open('sentiment_models/tokenizer.pickle', 'rb') as handle:
             tokenizer = pickle.load(handle)
         self.tokenizer = tokenizer
+
+    def _get_label_from_prob_dist(self, prob_dist, only_one_input):
+        if only_one_input:
+            predicted = np.argmax(prob_dist)
+        else:
+            predicted = np.argmax(prob_dist, axis=1)
+        return predicted
 
 
 if __name__ == "__main__":

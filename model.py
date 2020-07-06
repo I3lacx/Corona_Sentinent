@@ -16,6 +16,7 @@ from sentiment_models.vader_translated.vaderSentimentmaster.vaderSentiment.vader
     import SentimentIntensityAnalyzer
 from sentiment_models.vader_with_sentiws.lib_sentiment_sentiws import SentimentIntensityAnalyzerSentiWS
 from sentiment_models.preprocess_tweets import replace_all
+from sentiment_models.GerVADER.vaderSentimentGER import SentimentIntensityAnalyzer as GerVaderSentimentIntensityAnalyzer
 
 
 def preprocess_text(text):
@@ -93,12 +94,23 @@ class VaderSentiWS(Model):
         return self.analyzer.polarity_scores(text)["compound"]
 
 
+class GerVADER(Model):
+    """Use the translated version of Vader but replace its word-list with the SentiWS-wordlist"""
+
+    def __init__(self):
+        super().__init__(-0.1, 0.1, "VaderSentiWS")
+        self.analyzer = SentimentIntensityAnalyzerSentiWS()
+
+    def get_polarity_without_preprocessing(self, text):
+        return self.analyzer.polarity_scores(text)["compound"]
+
+
 class Vader(Model):
     """Use the translated version of Vader with its original but translated wordlist"""
 
     def __init__(self):
-        super().__init__(-0.33, 0.46, "Vader")
-        self.analyzer = SentimentIntensityAnalyzer()
+        super().__init__(-0.33, 0.46, "GerVader")
+        self.analyzer = GerVaderSentimentIntensityAnalyzer()
 
     def get_polarity_without_preprocessing(self, text):
         return self.analyzer.polarity_scores(text)["compound"]
@@ -106,15 +118,18 @@ class Vader(Model):
 
 class TrainedSentimentModel(Model):
     """Use the sentiment model we trained"""
-    def __init__(self):
+    def __init__(self, use_bilstm=True):
         super().__init__(0, 0, "TrainedModel")
-        self._load_model()
+        self._load_model(use_bilstm)
         self._load_tokenizer()
         self.label_translation = {0: "neg", 1: "neut", 2: "pos"}
 
-    def _load_model(self):
+    def _load_model(self, use_bilstm):
         """Load the model from file"""
-        self.analyzer = load_model("./sentiment_models/trained_model")
+        if use_bilstm:
+            self.analyzer = load_model("./sentiment_models/trained_bilstm_model")
+        else:
+            self.analyzer = load_model("./sentiment_models/trained_model")
 
     def get_polarity_without_preprocessing(self, text):
         """Return the polarity of the tweet as float in the range [-1, 1]."""
@@ -161,8 +176,8 @@ class TrainedSentimentModel(Model):
         prob_dist = self.analyzer.predict(passed_encoded_text)
         return prob_dist
 
-    def do_label_prediction(self, prediction_input):
-        prob_dist = self.do_prediction()
+    def _do_label_prediction(self, prediction_input):
+        prob_dist = self.do_prediction(prediction_input)
         predicted = self._get_label_from_prob_dist(prob_dist, len(prediction_input) == 1)
         return predicted
 

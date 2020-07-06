@@ -1,10 +1,10 @@
 import unittest
-from model import SpacySentiWS, TextBlob, VaderSentiWS, Vader, TrainedSentimentModel
+from model import SpacySentiWS, TextBlob, VaderSentiWS, Vader, TrainedSentimentModel, GerVADER
 
 
 class TestModels(unittest.TestCase):
     def setUp(self):
-        self.model_list = [SpacySentiWS, TextBlob, VaderSentiWS, Vader, TrainedSentimentModel]
+        self.model_list = [GerVADER, SpacySentiWS, TextBlob, VaderSentiWS, Vader, TrainedSentimentModel]
         text_pos = "hallo das ist ein ziemlich guter text und ich bin gut drauf :)"
         text_neg = "Ich hasse diesen Text, fickt euch alle ihr scheiß Arschlöcher :("
         text_neu = "Heute ist Sonntag und morgen ist Montag"

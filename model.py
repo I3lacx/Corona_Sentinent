@@ -94,18 +94,18 @@ class VaderSentiWS(Model):
         return self.analyzer.polarity_scores(text)["compound"]
 
 
-class GerVADER(Model):
+class Vader(Model):
     """Use the translated version of Vader but replace its word-list with the SentiWS-wordlist"""
 
     def __init__(self):
-        super().__init__(-0.1, 0.1, "VaderSentiWS")
-        self.analyzer = SentimentIntensityAnalyzerSentiWS()
+        super().__init__(-0.1, 0.1, "VaderTranslated")
+        self.analyzer = SentimentIntensityAnalyzer()
 
     def get_polarity_without_preprocessing(self, text):
         return self.analyzer.polarity_scores(text)["compound"]
 
 
-class Vader(Model):
+class GerVADER(Model):
     """Use the translated version of Vader with its original but translated wordlist"""
 
     def __init__(self):
@@ -118,7 +118,7 @@ class Vader(Model):
 
 class TrainedSentimentModel(Model):
     """Use the sentiment model we trained"""
-    def __init__(self, use_bilstm=True):
+    def __init__(self, use_bilstm=False):
         super().__init__(0, 0, "TrainedModel")
         self._load_model(use_bilstm)
         self._load_tokenizer()

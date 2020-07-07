@@ -2,7 +2,7 @@
 import json
 from textblob_de import TextBlobDE
 from sentiment_models.train_test_dev_split_european_corpus import read_data
-from sentiment_models.vader_translated.sentiment_vader import optimize_label_boundaries
+from sentiment_models.vader_translated.find_optimal_boundaries_sentiment_vader import optimize_label_boundaries
 
 INPUT_PATH = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_dev_preprocessed.csv"
 VALUE_PATH = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_dev_preprocessed_textblob_values.json"

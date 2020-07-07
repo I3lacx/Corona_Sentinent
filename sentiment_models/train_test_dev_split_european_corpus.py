@@ -1,6 +1,6 @@
 import csv
 import random
-from dataset_recreation_european_corpus import save_tweets
+from sentiment_models.dataset_recreation_european_corpus import save_tweets
 
 DATA_INPUT = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_filtered_with_text.csv"
 DATA_OUTPUT_PREFIX = "DATA/European_twitter_sentiment_german/German_Twitter_sentiment_"

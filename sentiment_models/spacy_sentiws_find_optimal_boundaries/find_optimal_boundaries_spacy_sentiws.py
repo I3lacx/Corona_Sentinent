@@ -5,7 +5,8 @@ import spacy
 from numpy import mean
 from spacy_sentiws import spaCySentiWS
 from sentiment_models.train_test_dev_split_european_corpus import read_data
-from sentiment_models.vader_translated.sentiment_vader import read_data_with_values, optimize_label_boundaries
+from sentiment_models.vader_translated.find_optimal_boundaries_sentiment_vader import read_data_with_values,\
+    optimize_label_boundaries
 
 nlp = spacy.load('de_core_news_sm')
 sentiws = spaCySentiWS(sentiws_path='DATA/SentiWS')

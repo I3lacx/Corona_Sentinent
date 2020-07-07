@@ -94,6 +94,17 @@ class VaderSentiWS(Model):
         return self.analyzer.polarity_scores(text)["compound"]
 
 
+class Baseline(Model):
+    """Only for comparison, labels all texts as neutral."""
+
+    def __init__(self):
+        super().__init__(-0.1, 0.1, "Baseline")
+        self.analyzer = None
+
+    def get_sentiment_label(self, text):
+        return "neut"
+
+
 class Vader(Model):
     """Use the translated version of Vader but replace its word-list with the SentiWS-wordlist"""
 
@@ -109,7 +120,7 @@ class GerVADER(Model):
     """Use the translated version of Vader with its original but translated wordlist"""
 
     def __init__(self):
-        super().__init__(-0.33, 0.46, "GerVader")
+        super().__init__(-0.34, 0.69, "GerVader")
         self.analyzer = GerVaderSentimentIntensityAnalyzer()
 
     def get_polarity_without_preprocessing(self, text):
@@ -118,18 +129,15 @@ class GerVADER(Model):
 
 class TrainedSentimentModel(Model):
     """Use the sentiment model we trained"""
-    def __init__(self, use_bilstm=False):
-        super().__init__(0, 0, "TrainedModel")
-        self._load_model(use_bilstm)
+    def __init__(self, model_path="./sentiment_models/trained_model", model_name="TrainedModel"):
+        super().__init__(0, 0, model_name)
+        self._load_model(model_path)
         self._load_tokenizer()
         self.label_translation = {0: "neg", 1: "neut", 2: "pos"}
 
-    def _load_model(self, use_bilstm):
+    def _load_model(self, model_path):
         """Load the model from file"""
-        if use_bilstm:
-            self.analyzer = load_model("./sentiment_models/trained_bilstm_model")
-        else:
-            self.analyzer = load_model("./sentiment_models/trained_model")
+        self.analyzer = load_model(model_path)
 
     def get_polarity_without_preprocessing(self, text):
         """Return the polarity of the tweet as float in the range [-1, 1]."""

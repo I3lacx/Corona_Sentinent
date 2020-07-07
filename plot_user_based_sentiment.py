@@ -33,11 +33,12 @@ config_dict = {
 	},
     "analyze_sentiment": {
       "pos_boundary": 0.8, # boundary for classifying tweets as "extremely" positive
-        "neg_boundary": 0.7 # boundary for classifying tweets as "extremely" negative
+        "neg_boundary": 0.7, # boundary for classifying tweets as "extremely" negative
+		"users_dir": "saved_data/user_timelines/" # there the sentiment analysis files are stored
     },
 	"plot": {
 		"title": "Testing",
-        "group_by": 3, # number of days of each group in the histogramm
+        "group_by": 5, # number of days of each group in the histogramm
         "end_date": datetime.datetime(2020,6,26), # last day included in the analysis
         "start_date": datetime.datetime(2020,3,1) # first day included in the analysis
 	},
@@ -61,7 +62,9 @@ crawler = Crawler(config)
 trained_model = TrainedSentimentModel()
 analyzer = Analyzer(config, trained_model)
 users_dir = "saved_data/user_timelines/"
-user_filenames = [users_dir+filename for filename in os.listdir(users_dir) if os.path.isfile(users_dir+filename)]
+user_filenames = [users_dir+filename for filename in os.listdir(users_dir)[:10] if os.path.isfile(users_dir+filename)]
 user_tweets = [crawler.load_tweet(filename) for filename in user_filenames]
-grouped_tweets = analyzer.analyze_and_plot_sentiment(user_tweets)
+per_user_analysation = analyzer.analyze_sentiment_user_based(user_tweets)
+analysation = analyzer.summarize_user_sentiments(per_user_analysation)
+grouped_tweets = analyzer.plot_sentiment(analysation)
 print("")

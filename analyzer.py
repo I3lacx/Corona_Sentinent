@@ -159,6 +159,10 @@ class Analyzer:
 		neg_boundary = self.config["analyze_sentiment"]["neg_boundary"]
 		user_analysations = []
 		for user_tweets in users_tweets:
+			if user_tweets == []:
+				print("Dropping User because no id found!")
+				continue
+		
 			current_user_analysation = self._get_single_user_sentiment_analysis(user_tweets, pos_boundary, neg_boundary)
 			user_analysations.append(current_user_analysation)
 		self._save_json_file(SENTIMENT_OVERVIEW_FILENAME, self.analysis_overview)
@@ -180,7 +184,7 @@ class Analyzer:
 	def _get_single_user_sentiment_analysis(self, users_tweets, pos_boundary, neg_boundary):
 		"""Create the sentiment dict for a single user-timeline,
 		the dict contains the percentage of pos/neg tweets per timespan"""
-		model_name = self.model.name
+		model_name = self.model.name 
 		user_id = users_tweets[0].user.id_str
 		user_sentiment_file = user_id + "_sentiment.json"
 		if user_id in self.analysis_overview[model_name]:

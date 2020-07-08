@@ -51,13 +51,17 @@ def load_keys(path):
 	return key, secret
 
 
-def get_api(user_auth = False, app_path="app_auth", user_path="user_auth"):
+def get_api(user_auth = False, dir_path="", app_path="app_auth", user_path="user_auth"):
 	""" 
 	Loads Application and user (if user_auth) keys from paths
 	:app_apth: path for Application keys
 	:user_path: path for User keys
 	:returns: tweepy API 
 	"""
+	
+	# Append dir_path if it exists
+	app_path = dir_path + app_path
+	user_path = dir_path + user_path
 	
 	# Loads Application (Consumer) Keys
 	application_key, application_secret_key = load_keys(app_path)

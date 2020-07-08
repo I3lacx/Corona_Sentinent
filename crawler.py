@@ -19,7 +19,6 @@ class Crawler:
 		""" Set configs to self values """
 		self.config = config
 		self.api = self.get_api()
-		
 		# Set this parameter during full scan
 		self.unique_user_ids = set(())
 		
@@ -28,7 +27,11 @@ class Crawler:
 		raise NotImplementedError
 		
 	def get_api(self):
-		return helper.get_api(self.config["user_auth"])
+		try:
+			api = helper.get_api(self.config["user_auth"], self.config["auth_path"])
+		except KeyError:
+			api = helper.get_api(self.config["user_auth"])
+		return api
 	
 	def get_users(self):
 		""" returns users objects """

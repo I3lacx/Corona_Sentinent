@@ -170,9 +170,11 @@ class Analyzer:
 		overall_analysation = {group_id: {"tweets": tweets} for group_id, tweets in user_analysations[0].items()}
 		for group_id in user_analysations[0]:
 			overall_analysation[group_id]["extremely_pos_percentage"] = \
-				statistics.mean((user_dict[group_id]["extremely_pos_percentage"] for user_dict in user_analysations))
+				statistics.mean((user_dict[group_id]["extremely_pos_percentage"] for user_dict in user_analysations
+								 if not user_dict[group_id]["extremely_pos_percentage"] == -1))
 			overall_analysation[group_id]["extremely_neg_percentage"] = \
-				statistics.mean((user_dict[group_id]["extremely_neg_percentage"] for user_dict in user_analysations))
+				statistics.mean((user_dict[group_id]["extremely_neg_percentage"] for user_dict in user_analysations
+								 if not user_dict[group_id]["extremely_neg_percentage"] == -1))
 		return overall_analysation
 
 	def _get_single_user_sentiment_analysis(self, users_tweets, pos_boundary, neg_boundary):
@@ -185,14 +187,14 @@ class Analyzer:
 			# tweets of this user have already been analyzed with this model
 			all_extreme_sentiments = self._load_json_file(user_sentiment_file)[model_name]
 		else:
-			all_extreme_sentiments = self.analyze_extreme_sentiment(users_tweets, pos_boundary, neg_boundary)
+			all_extreme_sentiments = self.analyze_extreme_sentiment(users_tweets)
 		grouped_tweets = self._group_tweets(list(zip(users_tweets, all_extreme_sentiments)))
 		analysation_dict = {group_id: {"tweets": [t[0] for t in tweet_tuples]} for group_id, tweet_tuples in
 							grouped_tweets.items()}
 		for group_id, tweet_tuple_list in grouped_tweets.items():
 			if len(tweet_tuple_list) == 0:
-				analysation_dict[group_id]["extremely_pos_percentage"] = 0
-				analysation_dict[group_id]["extremely_neg_percentage"] = 0
+				analysation_dict[group_id]["extremely_pos_percentage"] = -1
+				analysation_dict[group_id]["extremely_neg_percentage"] = -1
 			else:
 				extreme_sentiments = [tweet_tuple[1] for tweet_tuple in tweet_tuple_list]
 				overall_amount = len(extreme_sentiments)
@@ -206,11 +208,9 @@ class Analyzer:
 		self.analysis_overview[model_name].append(user_id)
 		return analysation_dict
 
-	def analyze_extreme_sentiment(self, tweets, pos_boundary, neg_boundary):
+	def analyze_extreme_sentiment(self, tweets):
 		tweet_texts = [tweet.text for tweet in tweets]
-		if isinstance(self.model, TrainedSentimentModel):
-			return self.model.get_label_for_clear_cases(tweet_texts, pos_boundary, neg_boundary)
-		raise NotImplementedError
+		return self.model.get_label_for_clear_cases(tweet_texts)
 
 	def _load_json_file(self, filename):
 		"""Load data from a json file called filename."""
@@ -218,7 +218,7 @@ class Analyzer:
 			loaded_file = json.load(input_file)
 		return loaded_file
 
-	def _save_json_file(self, filename, data,  is_analysation_dict=False):
+	def _save_json_file(self, filename, data, is_analysation_dict=False):
 		"""Save the data in a json file called filename in the users_dir."""
 		file_path = os.path.join(self.users_dir, filename)
 		if is_analysation_dict:

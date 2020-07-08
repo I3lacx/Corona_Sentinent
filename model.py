@@ -26,11 +26,24 @@ def preprocess_text(text):
 class Model:
     """ Parent class (Interface ish) of all models """
 
-    def __init__(self, below_negative, above_positive, model_name):
+    def __init__(self, below_negative, above_positive, below_extremely_neg, below_extremely_pos, model_name):
         super().__init__()
         self.below_negative = below_negative
         self.above_positive = above_positive
+        self.below_extremely_neg = below_extremely_neg
+        self.above_extremely_pos = below_extremely_pos
         self.name = model_name
+
+    def get_label_for_clear_cases(self, texts):
+        if not isinstance(texts, list):
+            texts = list(texts)
+        polarities = self.get_polarity(texts)
+        labels = []
+        for current_polarity in polarities:
+            label = "neg" if current_polarity < self.below_extremely_neg else \
+                "pos" if current_polarity > self.above_extremely_pos else "neut"
+            labels.append(label)
+        return labels
 
     def get_polarity_without_preprocessing(self, text):
         """Return the polarity of the tweet as float in the range [-1, 1]."""
@@ -60,7 +73,7 @@ class TextBlob(Model):
     """ Text Blob Model, for easy testing and comparison """
 
     def __init__(self):
-        super().__init__(-0.7, 0.7, "TextBlob")
+        super().__init__(-0.7, 0.7, -0.38, 0.7, "TextBlob")
 
     def get_polarity_without_preprocessing(self, text):
         return TextBlobDE(text).sentiment.polarity
@@ -70,7 +83,7 @@ class SpacySentiWS(Model):
     """Use spacy plugin to get SentiWS score and average them."""
 
     def __init__(self):
-        super().__init__(-0.37, 0.13, "SpacySentiWS")
+        super().__init__(-0.37, 0.13, -0.37, 0.13, "SpacySentiWS")
         self.nlp = spacy.load('de_core_news_sm')
         sentiws = spaCySentiWS(sentiws_path=os.path.join("sentiment_models", "DATA", "SentiWS"))
         self.nlp.add_pipe(sentiws)
@@ -89,7 +102,7 @@ class VaderSentiWS(Model):
     """Use the translated version of Vader but replace its word-list with the SentiWS-wordlist"""
 
     def __init__(self):
-        super().__init__(-0.1, 0.1, "VaderSentiWS")
+        super().__init__(-0.1, 0.1, -0.2, 0.25, "VaderSentiWS")
         self.analyzer = SentimentIntensityAnalyzerSentiWS()
 
     def get_polarity_without_preprocessing(self, text):
@@ -100,7 +113,7 @@ class Baseline(Model):
     """Only for comparison, labels all texts as neutral."""
 
     def __init__(self):
-        super().__init__(-0.1, 0.1, "Baseline")
+        super().__init__(-0.1, 0.1, -0.1, 0.1, "Baseline")
         self.analyzer = None
 
     def get_sentiment_label(self, text):
@@ -111,7 +124,7 @@ class Vader(Model):
     """Use the translated version of Vader but replace its word-list with the SentiWS-wordlist"""
 
     def __init__(self):
-        super().__init__(-0.1, 0.1, "VaderTranslated")
+        super().__init__(-0.1, 0.1, -0.55, 0.5, "VaderTranslated")
         self.analyzer = SentimentIntensityAnalyzer()
 
     def get_polarity_without_preprocessing(self, text):
@@ -122,7 +135,7 @@ class GerVADER(Model):
     """Use the translated version of Vader with its original but translated wordlist"""
 
     def __init__(self):
-        super().__init__(-0.34, 0.69, "GerVader")
+        super().__init__(-0.34, 0.69, -0.6, 0.8, "GerVader")
         self.analyzer = GerVaderSentimentIntensityAnalyzer()
 
     def get_polarity_without_preprocessing(self, text):
@@ -131,8 +144,9 @@ class GerVADER(Model):
 
 class TrainedSentimentModel(Model):
     """Use the sentiment model we trained"""
-    def __init__(self, model_path="./sentiment_models/trained_model", model_name="TrainedModel"):
-        super().__init__(0, 0, model_name)
+    def __init__(self, model_path="./sentiment_models/trained_model", model_name="TrainedModel", pos_boundary=0.8,
+                 neg_boundary=0.7):
+        super().__init__(0, 0, neg_boundary, pos_boundary, model_name)
         self._load_model(model_path)
         self._load_tokenizer()
         self.label_translation = {0: "neg", 1: "neut", 2: "pos"}
@@ -167,7 +181,7 @@ class TrainedSentimentModel(Model):
         predicted = self._do_label_prediction(texts)
         return [self.label_translation[pred.item()] for pred in predicted]
 
-    def get_label_for_clear_cases(self, texts, pos_boundary=0.8, neg_boundary=0.7):
+    def get_label_for_clear_cases(self, texts):
         if not isinstance(texts, list):
             texts = list(texts)
         texts = [preprocess_text(text) for text in texts]
@@ -175,7 +189,7 @@ class TrainedSentimentModel(Model):
         labels = []
         for i in range(len(texts)):
             row = [val.item() for val in prob_dists[i]]
-            label = "pos" if row[2] > pos_boundary else "neg" if row[0] > neg_boundary else "neut"
+            label = "pos" if row[2] > self.above_extremely_pos else "neg" if row[0] > self.below_extremely_neg else "neut"
             labels.append(label)
         return labels
     

@@ -4,7 +4,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 
 INPUT_PATH = "sentiment_models/DATA/European_twitter_sentiment_german/German_Twitter_sentiment_test_preprocessed.csv"
 
-models = [#GerVADER(), SpacySentiWS(), TextBlob(), VaderSentiWS(), Vader(),
+models = [GerVADER(), SpacySentiWS(), TextBlob(), VaderSentiWS(), Vader(),
 		  TrainedSentimentModel(model_name="LSTM emb. trainable"),
 		  TrainedSentimentModel(model_path="./sentiment_models/trained_lstm_embeddings_untrainable",
 								model_name="LSTM emb. untrainable"),

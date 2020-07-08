@@ -3,7 +3,7 @@ from model import GerVADER, SpacySentiWS, TextBlob, VaderSentiWS, Vader
 from sentiment_models.train_test_dev_split_european_corpus import read_data
 INPUT_PATH = "sentiment_models/DATA/European_twitter_sentiment_german/German_Twitter_sentiment_dev_preprocessed.csv"
 
-models = [GerVADER(), SpacySentiWS(), TextBlob(), VaderSentiWS(), Vader()]
+models = [GerVADER(), TextBlob(), VaderSentiWS(), Vader(), SpacySentiWS()]
 
 if __name__ == "__main__":
     input_data = read_data(INPUT_PATH)
@@ -46,6 +46,7 @@ if __name__ == "__main__":
         ax2.plot(boundaries, classified_amounts["pos"], color="lightgreen")
         ax2.plot(boundaries, classified_amounts["neg"], color="lightcoral")
         ax2.tick_params(axis='y', labelcolor="grey")
+        ax2.set_ylim([0, 1])
         ax1 = ax2.twinx()
         ax1.set_title(model.name)
         ax1.set_xlabel('boundary')
@@ -53,5 +54,6 @@ if __name__ == "__main__":
         ax1.plot(boundaries, precisions["pos"], color="darkgreen")
         ax1.plot(boundaries, precisions["neg"], color="darkred")
         ax1.tick_params(axis='y', labelcolor="black")
+        ax1.set_ylim([0, 1])
         fig.tight_layout()  # otherwise the right y-label is slightly clipped
         plt.show()

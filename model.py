@@ -73,7 +73,7 @@ class TextBlob(Model):
     """ Text Blob Model, for easy testing and comparison """
 
     def __init__(self):
-        super().__init__(-0.7, 0.7, -0.38, 0.7, "TextBlob")
+        super().__init__(-0.7, 0.7, -0.71, 0.7, "TextBlob")
 
     def get_polarity_without_preprocessing(self, text):
         return TextBlobDE(text).sentiment.polarity

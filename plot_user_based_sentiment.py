@@ -59,7 +59,7 @@ config_dict = {
 
 config = helper.init_config(config_dict)
 crawler = Crawler(config)
-trained_model = TrainedSentimentModel()
+trained_model = Vader()  # TrainedSentimentModel()
 analyzer = Analyzer(config, trained_model)
 users_dir = "saved_data/user_timelines/"
 user_filenames = [users_dir+filename for filename in os.listdir(users_dir)[:10] if os.path.isfile(users_dir+filename)]

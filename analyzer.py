@@ -119,7 +119,7 @@ class Analyzer:
 		config["plot"]["title"] = "Percentage extremely positive classified"
 		plot = Plotter(config)
 		plot.plot_dict(only_extremely_pos_dict)
-		config["plot"]["title"] = "Perrcentage extremely negative classified"
+		config["plot"]["title"] = "Percentage extremely negative classified"
 		plot = Plotter(config)
 		plot.plot_dict(only_extremely_neg_dict)
 
@@ -158,13 +158,15 @@ class Analyzer:
 		pos_boundary = self.config["analyze_sentiment"]["pos_boundary"]
 		neg_boundary = self.config["analyze_sentiment"]["neg_boundary"]
 		user_analysations = []
-		for user_tweets in users_tweets:
+		for i, user_tweets in enumerate(users_tweets):
 			if user_tweets == []:
 				print("Dropping User because no id found!")
 				continue
 		
 			current_user_analysation = self._get_single_user_sentiment_analysis(user_tweets, pos_boundary, neg_boundary)
 			user_analysations.append(current_user_analysation)
+			if i % 100 == 0:
+				self._save_json_file(SENTIMENT_OVERVIEW_FILENAME, self.analysis_overview)
 		self._save_json_file(SENTIMENT_OVERVIEW_FILENAME, self.analysis_overview)
 		return user_analysations
 

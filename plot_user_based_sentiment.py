@@ -34,7 +34,7 @@ config_dict = {
     "analyze_sentiment": {
       "pos_boundary": 0.8, # boundary for classifying tweets as "extremely" positive
         "neg_boundary": 0.7, # boundary for classifying tweets as "extremely" negative
-		"users_dir": "saved_data/user_timelines/" # there the sentiment analysis files are stored
+		"users_dir": "saved_data/user_timelines_sentiment/" # there the sentiment analysis files are stored
     },
 	"plot": {
 		"title": "Testing",
@@ -62,7 +62,7 @@ crawler = Crawler(config)
 trained_model = Vader()  # TrainedSentimentModel()
 analyzer = Analyzer(config, trained_model)
 users_dir = "saved_data/user_timelines/"
-user_filenames = [users_dir+filename for filename in sorted(os.listdir(users_dir))[:10] if os.path.isfile(users_dir+filename)]
+user_filenames = [users_dir+filename for filename in sorted(os.listdir(users_dir))[:110] if os.path.isfile(users_dir+filename)]
 user_tweets = [crawler.load_tweet(filename) for filename in user_filenames]
 per_user_analysation = analyzer.analyze_sentiment_user_based(user_tweets)
 analysation = analyzer.summarize_user_sentiments(per_user_analysation)

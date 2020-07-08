@@ -37,6 +37,8 @@ class Model:
         raise NotImplemented
     
     def get_polarity(self, text):
+        if isinstance(text, list):
+            return [self.get_polarity_without_preprocessing(preprocess_text(t)) for t in text]
         return self.get_polarity_without_preprocessing(preprocess_text(text))
     
     def get_sentiment_label(self, text):

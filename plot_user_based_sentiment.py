@@ -57,6 +57,8 @@ config_dict = {
     }
 }
 
+
+def analyze_part(analysation_dicts, begin_id, end_id, user_filenames):
 config = helper.init_config(config_dict)
 crawler = Crawler(config)
 trained_model = Vader()  # TrainedSentimentModel()

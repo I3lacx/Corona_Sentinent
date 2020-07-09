@@ -116,10 +116,10 @@ class Analyzer:
 		only_extremely_pos_dict = {week: info["extremely_pos_percentage"] for week, info in analysation.items()}
 		only_extremely_neg_dict = {week: info["extremely_neg_percentage"] for week, info in analysation.items()}
 		config = self.config.copy()
-		config["plot"]["title"] = "Percentage extremely positive classified"
+		config["plot"]["title"] = "Percentage extremely positive classified \n ({})".format(self.model.name)
 		plot = Plotter(config)
 		plot.plot_dict(only_extremely_pos_dict)
-		config["plot"]["title"] = "Percentage extremely negative classified"
+		config["plot"]["title"] = "Percentage extremely negative classified \n ({})".format(self.model.name)
 		plot = Plotter(config)
 		plot.plot_dict(only_extremely_neg_dict)
 
@@ -173,7 +173,7 @@ class Analyzer:
 	def summarize_user_sentiments(self, user_analysations):
 		"""Given a list of user_analysations (dicts containing the percentage of pos/neg tweets per timespan for each user)
 		return only one similar dict containing the means of those percentages per timespan"""
-		overall_analysation = {group_id: {"tweets": tweets} for group_id, tweets in user_analysations[0].items()}
+		overall_analysation = {group_id: {} for group_id, week_evaluation in user_analysations[0].items()}
 		for group_id in user_analysations[0]:
 			overall_analysation[group_id]["extremely_pos_percentage"] = \
 				statistics.mean((user_dict[group_id]["extremely_pos_percentage"] for user_dict in user_analysations
@@ -195,7 +195,9 @@ class Analyzer:
 		else:
 			all_extreme_sentiments = self.analyze_extreme_sentiment(users_tweets)
 		grouped_tweets = self._group_tweets(list(zip(users_tweets, all_extreme_sentiments)))
-		analysation_dict = {group_id: {"tweets": [t[0] for t in tweet_tuples]} for group_id, tweet_tuples in
+		# analysation_dict = {group_id: {"tweets": [t[0] for t in tweet_tuples]} for group_id, tweet_tuples in
+		# 					grouped_tweets.items()}
+		analysation_dict = {group_id: {} for group_id, tweet_tuples in
 							grouped_tweets.items()}
 		for group_id, tweet_tuple_list in grouped_tweets.items():
 			if len(tweet_tuple_list) == 0:

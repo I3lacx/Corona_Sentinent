@@ -16,10 +16,12 @@ class Plotter:
 		self.config_txt = helper.config_to_txt(self.config)
 		
 	def plot_dict(self, my_dict):
-		plt.bar(range(len(my_dict)), list(my_dict.values()), tick_label=list(my_dict.keys()), width=0.6)
+		tick_label = list(my_dict.keys())
+		plt.xticks(rotation=70)
+		plt.bar(range(len(my_dict)), list(my_dict.values()), tick_label=tick_label, width=0.6)
 		plt.title(self.config["plot"]["title"])
-		sub_txt = self.config_txt["query"]
-		plt.figtext(0.5, 0.01, sub_txt, wrap=True, horizontalalignment='center', fontsize=12)
+		# sub_txt = self.config_txt["query"]
+		# plt.figtext(0.5, 0.01, sub_txt, wrap=True, horizontalalignment='center', fontsize=10)
 		plt.show()
 
 	def simple_hist(self, values):

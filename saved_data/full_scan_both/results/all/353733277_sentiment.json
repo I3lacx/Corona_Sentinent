@@ -1,1 +1,1 @@
-{"TrainedModel": ["neg", "neut", "neut"], "TextBlob": ["neg", "neut", "neut"]}
+{"TrainedModel": ["neg", "neut", "neut"], "TextBlob": ["neg", "neut", "neut"], "VaderTranslated": ["neut", "neut", "neut"]}

@@ -175,12 +175,20 @@ class Analyzer:
 		return only one similar dict containing the means of those percentages per timespan"""
 		overall_analysation = {group_id: {} for group_id, week_evaluation in user_analysations[0].items()}
 		for group_id in user_analysations[0]:
-			overall_analysation[group_id]["extremely_pos_percentage"] = \
-				statistics.mean((user_dict[group_id]["extremely_pos_percentage"] for user_dict in user_analysations
-								 if not user_dict[group_id]["extremely_pos_percentage"] == -1))
-			overall_analysation[group_id]["extremely_neg_percentage"] = \
-				statistics.mean((user_dict[group_id]["extremely_neg_percentage"] for user_dict in user_analysations
-								 if not user_dict[group_id]["extremely_neg_percentage"] == -1))
+			try:
+				overall_analysation[group_id]["extremely_pos_percentage"] = \
+					statistics.mean((user_dict[group_id]["extremely_pos_percentage"] for user_dict in user_analysations
+									 if not user_dict[group_id]["extremely_pos_percentage"] == -1))
+			except statistics.StatisticsError:
+				overall_analysation[group_id]["extremely_pos_percentage"] = 0
+				print("No pos datapoints for this timespan, start_date = {}".format(group_id))
+			try:
+				overall_analysation[group_id]["extremely_neg_percentage"] = \
+					statistics.mean((user_dict[group_id]["extremely_neg_percentage"] for user_dict in user_analysations
+									 if not user_dict[group_id]["extremely_neg_percentage"] == -1))
+			except statistics.StatisticsError:
+				overall_analysation[group_id]["extremely_neg_percentage"] = 0
+				print("No neg datapoints for this timespan, start_date = {}".format(group_id))
 		return overall_analysation
 
 	def _get_single_user_sentiment_analysis(self, users_tweets, pos_boundary, neg_boundary):

@@ -5,10 +5,7 @@ from textblob_de import TextBlobDE
 import spacy
 import numpy as np
 from statistics import mean
-from tensorflow.keras.models import load_model, Sequential
-from tensorflow.keras.layers import LSTM, Dense
-from tensorflow.keras.layers import SpatialDropout1D
-from tensorflow.keras.layers import Embedding
+from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from spacy_sentiws import spaCySentiWS

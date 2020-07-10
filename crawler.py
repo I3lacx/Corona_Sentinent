@@ -382,6 +382,23 @@ class Crawler:
 			# Set operation to fuse both sets
 			unique_ids.update(set([x.strip() for x in user_ids]))
 		return unique_ids
+
+	def load_tweet_for_analysation(self, filename):
+		tweets = self.load_tweet(filename)
+		reduced_tweets = [ReducedStatus(t.user.id_str, t.created_at, t.text) for t in tweets]
+		return reduced_tweets
+
+
+class ReducedUser(object):
+	def __init__(self, user_id):
+		self.id_str = user_id
+
+
+class ReducedStatus():
+	def __init__(self, user_id, created_at, text):
+		self.user = ReducedUser(user_id)
+		self.created_at = created_at
+		self.text = text
 		
 		
 		

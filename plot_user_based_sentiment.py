@@ -38,13 +38,13 @@ config_dict = {
 	"analyze_sentiment": {
 		"pos_boundary": 0.8,  # boundary for classifying tweets as "extremely" positive
 		"neg_boundary": 0.7,  # boundary for classifying tweets as "extremely" negative
-		"users_dir": "saved_data/full_scan_both/results/{}/".format(SCAN_ID)  # there the sentiment analysis files are stored
+		"users_dir": "saved_data/full_scan_both/results/all/".format(SCAN_ID)  # there the sentiment analysis files are stored
 	},
 	"plot": {
 		"title": "Testing",
 		"group_by": 1,  # number of days of each group in the histogramm
-		"end_date": datetime.datetime(2020, 6, 25, 23, 59),  # last day included in the analysis
-		"start_date": datetime.datetime(2020, 6, 1)  # first day included in the analysis
+		"end_date": datetime.datetime(2020, 3, 31, 23, 59),  # last day included in the analysis
+		"start_date": datetime.datetime(2020, 3, 1)  # first day included in the analysis
 	},
 	# Full search not tested and should only be used with caution!
 	"full_search": {

@@ -158,15 +158,17 @@ class Analyzer:
 		pos_boundary = self.config["analyze_sentiment"]["pos_boundary"]
 		neg_boundary = self.config["analyze_sentiment"]["neg_boundary"]
 		user_analysations = []
+		counter = 0
 		for i, user_tweets in enumerate(users_tweets):
 			if user_tweets == []:
-				print("Dropping User because no id found!")
+				counter += 1
 				continue
 		
 			current_user_analysation = self._get_single_user_sentiment_analysis(user_tweets, pos_boundary, neg_boundary)
 			user_analysations.append(current_user_analysation)
 			if i % 100 == 0:
 				self._save_json_file(SENTIMENT_OVERVIEW_FILENAME, self.analysis_overview)
+		print(f"Dropped {counter} Users because no id found!")
 		self._save_json_file(SENTIMENT_OVERVIEW_FILENAME, self.analysis_overview)
 		return user_analysations
 
@@ -201,26 +203,41 @@ class Analyzer:
 			# tweets of this user have already been analyzed with this model
 			all_extreme_sentiments = self._load_json_file(user_sentiment_file)[model_name]
 		else:
+			print("User analyzation not found, reanalyzing and saving file to disk")
 			all_extreme_sentiments = self.analyze_extreme_sentiment(users_tweets)
+			self._save_json_file(user_sentiment_file, all_extreme_sentiments, is_analysation_dict=True)
 		grouped_tweets = self._group_tweets(list(zip(users_tweets, all_extreme_sentiments)))
 		# analysation_dict = {group_id: {"tweets": [t[0] for t in tweet_tuples]} for group_id, tweet_tuples in
 		# 					grouped_tweets.items()}
 		analysation_dict = {group_id: {} for group_id, tweet_tuples in
 							grouped_tweets.items()}
 		for group_id, tweet_tuple_list in grouped_tweets.items():
+			# len is 0 when user has not posted anything during current day (group_id) -> value = -1
 			if len(tweet_tuple_list) == 0:
 				analysation_dict[group_id]["extremely_pos_percentage"] = -1
 				analysation_dict[group_id]["extremely_neg_percentage"] = -1
+				
+				analysation_dict[group_id]["extremely_pos_amount"] = -1
+				analysation_dict[group_id]["extremely_neg_amount"] = -1
+				analysation_dict[group_id]["neut_amount"] = -1
 			else:
+				# Extreme Sentiments percentages (relative to how much this person tweeted during the SAME DAY!)
+				# Can be 0 if no pos/neg sentiment have been found, only neutral.
 				extreme_sentiments = [tweet_tuple[1] for tweet_tuple in tweet_tuple_list]
 				overall_amount = len(extreme_sentiments)
 				extremely_pos_amount = sum(1 for sent in extreme_sentiments if sent == "pos")
 				extremely_neg_amount = sum(1 for sent in extreme_sentiments if sent == "neg")
+				neut_amount = sum(1 for sent in extreme_sentiments if sent == "neut")
+				analysation_dict[group_id]["neut_amount"] = neut_amount
 				extremely_pos_percentage = extremely_pos_amount / overall_amount * 100
 				extremely_neg_percentage = extremely_neg_amount / overall_amount * 100
+
 				analysation_dict[group_id]["extremely_pos_percentage"] = extremely_pos_percentage
 				analysation_dict[group_id]["extremely_neg_percentage"] = extremely_neg_percentage
-		self._save_json_file(user_sentiment_file, all_extreme_sentiments, is_analysation_dict=True)
+
+				analysation_dict[group_id]["extremely_pos_amount"] = extremely_pos_amount
+				analysation_dict[group_id]["extremely_neg_amount"] = extremely_neg_amount
+
 		self.analysis_overview[model_name].append(user_id)
 		return analysation_dict
 
@@ -257,6 +274,10 @@ def group_tweets_by_calendar_week(tweets, start_date):
 	current_calendar_week = int(datetime.now().strftime("%W"))
 	calendar_week_grouped_tweets = {str(kw): [] for kw in range(first_calendar_week, current_calendar_week + 1)}
 	for tweet in tweets:
+		if len(tweet.text) == 0:
+			print("Empty:", tweet.created_at)
+			continue
+			
 		if (tweet.created_at - start_date).days > 0:
 			tweet_calendar_week = tweet.created_at.strftime("%W")
 			tweet_calendar_week = tweet_calendar_week[1:] if tweet_calendar_week.startswith(

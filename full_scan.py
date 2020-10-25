@@ -6,7 +6,7 @@ from crawler import Crawler
 import tensorflow
 import os
 import datetime
-
+# TODO more text!
 config = {
 	"user_auth": False, # autheticate as user or application
 	"auth_path": "/home/maxi/Documents/UNI/Ethics/Project/repo/Corona_Sentinent/", # path to auth

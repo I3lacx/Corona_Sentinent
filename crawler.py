@@ -55,8 +55,8 @@ class Crawler:
 		Will return tweet objects for num_resuts and specific settings
 		"""
 		iterator = self._get_tweet_iterator()
-		res_tweets = self._get_from_iterator(iterator)
-			
+		res_tweets, _ = self._get_from_iterator(iterator)
+		
 		return res_tweets
 	
 	def _get_full_search_iterator(self):

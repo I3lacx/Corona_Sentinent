@@ -26,5 +26,14 @@ Furthermore this direction needs to contain a file called "sentiment_analysis_ov
 #### Saved Data
 All of saved data and analyzation results is found in the saved_data folder. In this full_scan_both folder, the resuls (The analyzation results), all the data from the tweets in tweets and all the scraped users in users can be found. The "0", "1" and "2" folders indicate the region that was used in the search. 
 
-#### Ethical Information
-TODO: Data scraping is not optimal, good to know before interpreting the resutls!
+#### Results
+Here are some example results from our analysis. It is important to note however, that all the graphs and conclusions are not universal results and are only valid based on the parameters of our search! Because of how we scraped the data, how people tweet etc. this data is not reflective of the overall population!
+
+![Extremely Negative Amount Summed](https://github.com/I3lacx/Corona_Sentinent/blob/documentation/plots/Extremely%20Negative%20Amount%20Summed.png)
+In this graph one can observe the amount of tweets that were classified as negative by our language model over the time between 01.03 and 30.06. There is not a very clear trend visible, related to corona related activities. Some Higher bars represent other political events, but most peaks are unrelated and difficult to pinpoint to a specific event. The slight increase over time can be misleading, but is likely to come from the bias in user data. As we scraped for users with recent activites, the bias in user selection is that they are currently active, irrelevant of their previous activity!
+
+![Extremely Negative Percent](https://github.com/I3lacx/Corona_Sentinent/blob/documentation/plots/neg_perc_all.png)
+This graph shows that no change is happening over time. Here each bar represents how much percent of a persons tweets were classified as very negative. This overall trend does not change over time. 
+
+![Extremely Positive Percent](https://github.com/I3lacx/Corona_Sentinent/blob/documentation/plots/pos_perc_all.png)
+This graph shows the percent of positively classified tweets from our language model in a given week. Here it can be observed that for certain events, in this case eastern, the model works very good. As a tweet like "Happy Eastern" or "Frohe Ostern" in german, is a positive tweet and can easily be observed in the data. However, no big other trends can be observed besides this one. 

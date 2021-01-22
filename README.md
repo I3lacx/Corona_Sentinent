@@ -8,6 +8,9 @@ This is a reposetory for scarping data from twitter, based on tweepy and twitter
 - Analyse textual data with different natural language models
 - Plot data information/ analyzation results in nice plots
 
+**For a quick showcase see Tutorial_simple.ipynb**
+**A Twitter developer account is needed if you want to scrape your own data!**
+
 #### Code Structure
 
 The general idea of the code is to use crawler.py to crawl the data, analyzer to analyze the data, plotter to create plots and model.py to act as an interface between our implemented sentiment analyzers, which is specialized in german tweets. To configurate what will be used in which way, a config dictionary with pre-defined attributes is used. One example for this is data_exploration.ipynb.

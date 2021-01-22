@@ -9,7 +9,9 @@ This is a reposetory for scarping data from twitter, based on tweepy and twitter
 - Plot data information/ analyzation results in nice plots
 
 **For a quick showcase see Tutorial_simple.ipynb**
+
 **A Twitter developer account is needed if you want to scrape your own data!**
+
 
 #### Code Structure
 
